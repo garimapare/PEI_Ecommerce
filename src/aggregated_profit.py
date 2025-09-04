@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
-    col, year, current_timestamp, lit, sum as _sum, to_date
+    col, year, current_timestamp, lit, sum , to_date
 )
 from pyspark.sql.utils import AnalysisException
 
@@ -32,7 +32,7 @@ def create_gold_profit_aggregates(
     - Product Category
     - Product Sub Category
     - Customer
-    Handles malformed dates and negative profits by sending them to bad records.
+    Handles incorrect dates and negative profits by sending them to bad records.
     """
 
     try:
@@ -59,7 +59,7 @@ def create_gold_profit_aggregates(
         agg_df = (
             valid_dates_df.withColumn("Year", year(col("Order_Date")))
                           .groupBy("Year", "Category", "Sub_Category", "Customer_ID")
-                          .agg(_sum("Profit").alias("Total_Profit"))
+                          .agg(sum("Profit").alias("Total_Profit"))
         )
 
         # ---------------------------
