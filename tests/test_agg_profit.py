@@ -19,11 +19,15 @@ def spark():
     if spark:
         return spark
 
-    # Else run locally
+    # Else run locally with Delta Lake configuration
     return (
         SparkSession.builder
         .appName("pytest-gold-profit-aggregates")
         .master("local[2]")
+        .config("spark.jars.packages", "io.delta:delta-spark_2.13:3.0.0")
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .getOrCreate()
     )
 
@@ -58,7 +62,9 @@ def setup_silver_table(spark):
     ]
 
     df = spark.createDataFrame(data)
-    df.write.format("delta").mode("overwrite").saveAsTable("silver.order_details")
+    # Use Delta Lake compatible table creation
+    df.createOrReplaceTempView("temp_silver_order_details")
+    spark.sql("CREATE OR REPLACE TABLE silver.order_details USING DELTA AS SELECT * FROM temp_silver_order_details")
 
 
 def collect_as_set(df, cols):

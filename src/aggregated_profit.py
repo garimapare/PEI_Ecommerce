@@ -100,19 +100,12 @@ def create_gold_profit_aggregates(
         # Save outputs to delta tables
         # ------------------------------
         if save:
-            (
-                valid_df.write.format("delta")
-                .mode("overwrite")
-                .option("mergeSchema", "true")
-                .saveAsTable(output)
-            )
-
-            (
-                bad_df.write.format("delta")
-                .mode("overwrite")
-                .option("mergeSchema", "true")
-                .saveAsTable(error)
-            )
+            # For Delta tables, use createOrReplaceTempView and then CREATE OR REPLACE TABLE
+            valid_df.createOrReplaceTempView("temp_valid_profit")
+            spark.sql(f"CREATE OR REPLACE TABLE {output} USING DELTA AS SELECT * FROM temp_valid_profit")
+            
+            bad_df.createOrReplaceTempView("temp_bad_profit")
+            spark.sql(f"CREATE OR REPLACE TABLE {error} USING DELTA AS SELECT * FROM temp_bad_profit")
 
         return valid_df, bad_df
 

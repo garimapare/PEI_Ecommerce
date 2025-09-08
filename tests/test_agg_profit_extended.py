@@ -22,9 +22,14 @@ def spark():
     if existing_session:
         return existing_session
     else:
-        # Fallback for local development
+        # Fallback for local development with Delta Lake configuration
         return SparkSession.builder \
             .appName("pytest-gold-profit-extended") \
+            .master("local[*]") \
+            .config("spark.jars.packages", "io.delta:delta-spark_2.13:3.0.0") \
+            .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+            .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
+            .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
             .getOrCreate()
 
 class TestAggregatedProfitExtended:

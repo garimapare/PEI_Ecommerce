@@ -46,8 +46,12 @@ def create_enriched_customers(
         bad_customers_df = customers_df.exceptAll(valid_customers_df)
 
         if save:
-            valid_customers_df.write.format("delta").mode("overwrite").saveAsTable(output)
-            bad_customers_df.write.format("delta").mode("overwrite").saveAsTable(error)
+            # For Delta tables, use createOrReplaceTempView and then CREATE OR REPLACE TABLE
+            valid_customers_df.createOrReplaceTempView("temp_valid_customers")
+            spark.sql(f"CREATE OR REPLACE TABLE {output} USING DELTA AS SELECT * FROM temp_valid_customers")
+            
+            bad_customers_df.createOrReplaceTempView("temp_bad_customers")
+            spark.sql(f"CREATE OR REPLACE TABLE {error} USING DELTA AS SELECT * FROM temp_bad_customers")
 
         return valid_customers_df, bad_customers_df
 
@@ -96,8 +100,12 @@ def create_enriched_products(
         bad_products_df = products_df.exceptAll(valid_products_df)
 
         if save:
-            valid_products_df.write.format("delta").mode("overwrite").saveAsTable(output)
-            bad_products_df.write.format("delta").mode("overwrite").saveAsTable(error)
+            # For Delta tables, use createOrReplaceTempView and then CREATE OR REPLACE TABLE
+            valid_products_df.createOrReplaceTempView("temp_valid_products")
+            spark.sql(f"CREATE OR REPLACE TABLE {output} USING DELTA AS SELECT * FROM temp_valid_products")
+            
+            bad_products_df.createOrReplaceTempView("temp_bad_products")
+            spark.sql(f"CREATE OR REPLACE TABLE {error} USING DELTA AS SELECT * FROM temp_bad_products")
 
         return valid_products_df, bad_products_df
 

@@ -7,17 +7,23 @@ def get_spark(app_name: str = "enriched-order-details") -> SparkSession:
     """
     Get or create a SparkSession.
     - On Databricks: use the active session (Spark Connect).
-    - Locally: create a new Spark with master("local[*]").
+    - Locally: create a new Spark with master("local[*]") and Delta Lake configuration.
     """
     spark = SparkSession.getActiveSession()
     if spark:  # Running inside Databricks
         return spark
 
-    # Running locally
+    # Running locally with Delta Lake configuration
     return (
         SparkSession.builder
         .appName(app_name)
         .master("local[*]")  # only used outside Databricks
+        .config("spark.jars.packages", "io.delta:delta-spark_2.13:3.0.0")
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .config("spark.sql.adaptive.enabled", "true")
+        .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
         .getOrCreate()
     )
 
@@ -126,12 +132,12 @@ def create_enriched_order_details(
         # Save outputs
         # ---------------------------
         if save:
-            valid_order_details_df.write.format("delta").mode("overwrite").option("mergeSchema", "true").saveAsTable(
-                output
-            )
-            order_details_bad_records_df.write.format("delta").mode("overwrite").option("mergeSchema", "true").saveAsTable(
-                error
-            )
+            # For Delta tables, use createOrReplaceTempView and then CREATE OR REPLACE TABLE
+            valid_order_details_df.createOrReplaceTempView("temp_valid_order_details")
+            spark.sql(f"CREATE OR REPLACE TABLE {output} USING DELTA AS SELECT * FROM temp_valid_order_details")
+            
+            order_details_bad_records_df.createOrReplaceTempView("temp_bad_order_details")
+            spark.sql(f"CREATE OR REPLACE TABLE {error} USING DELTA AS SELECT * FROM temp_bad_order_details")
 
         return valid_order_details_df, order_details_bad_records_df
 
