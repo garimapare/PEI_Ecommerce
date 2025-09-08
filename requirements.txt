@@ -1,0 +1,18 @@
+# Core PySpark Dependencies
+pyspark>=3.3.0
+
+# Delta Lake for advanced data lake capabilities
+delta-spark>=2.0.0
+
+# Testing Framework and Extensions
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-html>=3.1.0
+pytest-xdist>=3.0.0
+
+# Python Standard Library (these are built-in, listed for reference)
+# sys - built-in
+# os - built-in
+# subprocess - built-in
+# argparse - built-in
+# pathlib - built-in
