@@ -82,7 +82,6 @@ def test_table_names() -> Dict[str, str]:
 
 
 class TestEnrichedOrderDetailsExtended:
-    """Extended test cases for enriched order details functionality with advanced pytest features"""
     
     # Parameterized tests for different profit scenarios
     @pytest.mark.parametrize("profit_value,expected_valid,expected_bad", [
