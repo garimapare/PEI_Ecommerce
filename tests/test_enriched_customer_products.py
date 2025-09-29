@@ -1,29 +1,3 @@
-# import pytest
-# from pyspark.sql import SparkSession
-# from pyspark.sql import Row
-# from pyspark.sql.utils import AnalysisException
-# import sys
-# import os
-# import os
-# os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
-
-# # Dynamically add the repo root to sys.path
-# repo_root = "/Workspace/Users/pare.garima.18@gmail.com/PEI_Ecommerce/src"
-# sys.path.append(repo_root)
-
-# from src.enriched_customers_products import create_enriched_customers, create_enriched_products
-
-# @pytest.fixture(scope="session")
-# def spark():
-#     """
-#     Create a new Spark session for pytest when running inside Databricks via shell.
-#     """
-#     return (
-#         SparkSession.builder
-#         .appName("pytest-enriched")
-#         .getOrCreate()
-#     )
-
 import pytest
 from pyspark.sql import SparkSession, Row
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
